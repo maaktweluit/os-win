@@ -237,12 +237,19 @@ class VMUtils(baseutils.BaseUtilsVirt):
         vm = self._lookup_vm_check(vm_name, as_vssd=False)
         return vm.Name
 
-    def _set_vm_memory(self, vmsetting, memory_mb, memory_per_numa_node,
-                       dynamic_memory_ratio):
+    def get_vm_memory(self, vm_name, vmsetting=None):
+        if not vmsetting:
+            vmsetting = self._lookup_vm_check(vm_name)
+
         mem_settings = _wqlutils.get_element_associated_class(
             self._compat_conn, self._MEMORY_SETTING_DATA_CLASS,
             element_instance_id=vmsetting.InstanceID)[0]
 
+        return mem_settings
+
+    def _set_vm_memory(self, vmsetting, memory_mb, memory_per_numa_node,
+                       dynamic_memory_ratio):
+        mem_settings = self.get_vm_memory(None, vmsetting)
         max_mem = int(memory_mb)
         mem_settings.Limit = max_mem
 
